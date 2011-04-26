@@ -114,8 +114,8 @@
 (defn symb [name]
   (lexeme (string name)))
 
-;;(def semi (symb ";"))
-;;(def comma (symb ","))
+(def semi (symb ";"))
+(def comma (symb ","))
 
 ;; Convert the result of a parse to a string, if it's a list then concatenates the list...
 (defn stringify [p]
