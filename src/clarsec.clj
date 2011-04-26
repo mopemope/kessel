@@ -50,8 +50,11 @@
 (defn option [default p]
   (either p default))
 
-(defn string [strn]
-   ((m-seq (map is-char strn)) strn))
+(defn string [target]
+  (>>==
+   (with-monad parser-m
+     (m-seq (map is-char target)))
+   #(apply str %)))
 
 (declare many1)
 
@@ -147,12 +150,8 @@
 (defn braces [p]
   (between (symb "{") (symb "}") p))
 
-
 (def stringLiteral
      (stringify (lexeme (between (is-char \") (is-char \") (many (not-char \"))))))
 
 (defn parse [parser input]
-  (>>= (return input) (force parser)))
-
-;;(defn -main []
-;;  (println (parse (>> (delay letter) (delay letter)) "ca.")))
+  ((force parser) input))
