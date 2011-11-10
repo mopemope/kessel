@@ -1,5 +1,5 @@
-(ns clarsec.examples.date
-  (:use clarsec)
+(ns kessel.examples.date
+  (:use kessel)
   (:use [clojure.contrib.monads :only (domonad)]))
 
 (defn titlecase [s]
@@ -71,3 +71,12 @@
             _ separator
             d natural :when (valid-date? (:year y) (:month m) d)]
            (merge y m {:day d})))
+
+
+
+
+
+
+
+
+

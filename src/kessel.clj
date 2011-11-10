@@ -1,4 +1,4 @@
-(ns clarsec
+(ns kessel
   (:use [clojure.contrib.monads]))
 
 (def parser-m (state-t maybe-m))

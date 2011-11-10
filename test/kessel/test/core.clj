@@ -1,6 +1,6 @@
-(ns clarsec.test.core
+(ns kessel.test.core
   (:use [clojure.test])
-  (:use [clarsec :as c]))
+  (:use [kessel :as c]))
 
 (deftest anything
   (is (= (c/any-token "Foo") [\F "oo"])
