@@ -1,4 +1,0 @@
-(ns clarsec.examples.json
-  (:use [clarsec :as c]))
-
-(def simple-value )
