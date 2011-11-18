@@ -1,19 +1,13 @@
-# clarsec
+# Kessel
 
-clarsec is an attempt to port haskell parsec to clojure
-
-This library is inspired on http://kotka.de/projects/clojure/parser.html and uses the Meikel Brandmeyer's "monad" library (slightly adapted), as I didn't understand how the clojure contrib monad
-library works.
+Kessel is a reworking of clarsec to use contrib.monads instead of the home brewed monads in clarsec. I'd like to, in the future, build this into something that can handle any grammar without blowing up, using some memoization techniques I've read about in some papers, but we'll see if that ever happens.
 
 ## Usage
 
-there is an example parser which I ported straight from a Haskell Parsec code.
+See the examples in kessel/examples.
 
-Basically, you should be able to write the examples on http://kotka.de/projects/clojure/parser.html.
 
-The library comes with a small number of basic combinators. I hope it will be useful.
-
-## Caveats
+## Caveats (unchanged from clarsec)
 
 forward references are a mess. I tried to maintain the DSL as simple as possible. Imagine that "structureDef" and "comma" are two already existing
 parsers, and "brackets" and "sepBy" are two combinators. I want to be able to write it like this:
@@ -37,7 +31,7 @@ Unfortunately this required a small patch to Brandmeyer's monad library.
 
 ## Installation
 
-leim jar
+lein jar
 
 ## License
 
