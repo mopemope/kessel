@@ -1,5 +1,5 @@
 (ns kessel
-  (:use [clojure.contrib.monads]))
+  (:use [clojure.algo.monads]))
 
 (def parser-m (state-t maybe-m))
 
@@ -19,6 +19,13 @@
 
 (defn either [& parsers]
   (apply (:m-plus parser-m) parsers))
+
+
+(defmacro doparser
+  "Wraps body in `domonad' boilerplate"
+  [& body]
+  `(domonad parser-m
+            ~@body))
 
 (defn any-token [strn]
   (if (= "" strn)
@@ -62,16 +69,14 @@
   (optional (many1 parser)))
 
 (defn many1 [parser]
-  (domonad parser-m
-           [a parser
-            as (many parser)]
-   (concat [a] as)))
+  (doparser [a parser
+             as (many parser)]
+            (concat [a] as)))
 
 (defn end-by-m [f p sep]
-  (f (domonad parser-m
-              [r p
-               _ sep]
-    r)))
+  (f (doparser [r p
+                _ sep]
+               r)))
 
 (defn end-by [p sep]
   (end-by-m many p sep))
@@ -79,20 +84,23 @@
 (defn end-by-1 [p sep]
   (end-by-m many1 p sep))
 
+
 (defn sep-by-1 [p sep]
-  (domonad parser-m
-           [x p
-            xs (many (>> sep p))]
-    (cons x xs)))
+  (doparser [x p
+             xs (many (>> sep p))]
+            (cons x xs)))
 
 (defn sep-by [p sep]
   (either (sep-by-1 p sep) (return ())))
 
 (defn followed-by [p sep]
-  (domonad parser-m
-           [r p
-            _ sep]
-    r))
+  (doparser [r p
+             _ sep]
+            r))
+
+(defn interpose [sep ps]
+  (with-monad parser-m
+    (m-reduce conj [] (clojure.core/interpose sep ps))))
 
 (def letter
      (satisfy #(Character/isLetter %)))
@@ -103,6 +111,8 @@
 (defn one-of [target-strn]
   (let [chs (into #{} target-strn)]
     (satisfy #(contains? chs %))))
+
+(def aspace (satisfy #(= % \space)))
 
 (def space (one-of " \r\n\t"))
 
@@ -115,6 +125,7 @@
   (lexeme (string name)))
 
 (def semi (symb ";"))
+(def colon (symb ":"))
 (def comma (symb ","))
 
 ;; Convert the result of a parse to a string, if it's a list then concatenates the list...
@@ -122,10 +133,10 @@
   (>>= p #(return (if (seq? %) (apply str %) (str %)))))
 
 (def base-identifier
-  (domonad parser-m
-           [c  letter
-            cs (many (either letter digit))]
-    (apply str (cons c cs))))
+  (doparser [c  letter
+             cs (many (either letter digit))]
+
+   (apply str (cons c cs))))
 
 (def identifier
      (lexeme base-identifier))
@@ -135,11 +146,10 @@
                    #(new Integer %))))
 
 (defn between [open close p]
-  (domonad parser-m
-           [_ open
-            x p
-            _ close]
-    x))
+  (doparser [_ open
+             x p
+             _ close]
+            x))
 
 (defn parens [p]
   (between (symb "(") (symb ")") p))
@@ -150,8 +160,8 @@
 (defn braces [p]
   (between (symb "{") (symb "}") p))
 
-(def stringLiteral
-     (stringify (lexeme (between (is-char \") (is-char \") (many (not-char \"))))))
+(def string-literal
+  (stringify (lexeme (between (is-char \") (is-char \") (many (not-char \"))))))
 
 (defn parse [parser input]
   ((force parser) input))
