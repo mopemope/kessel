@@ -1,4 +1,5 @@
 (ns kessel
+  (:refer-clojure :exclude [interpose])
   (:use [clojure.algo.monads]))
 
 (def parser-m (state-t maybe-m))
@@ -164,4 +165,4 @@
   (stringify (lexeme (between (is-char \") (is-char \") (many (not-char \"))))))
 
 (defn parse [parser input]
-  ((force parser) input))
+  (parser input))

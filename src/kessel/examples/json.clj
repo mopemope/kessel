@@ -1,22 +1,42 @@
 (ns kessel.examples.json
-  ^{:doc "This example uses kessel to create a simplified JSON parser"}
-  (:use [kessel]))
+  ^{:doc "This example uses kessel to create a simplified JSON parser
 
-(def jkey (lexeme (either natural string-literal)))
-(def jvalue []
-  (doparser [p (lexeme (either jdict jlist natural string-literal))]
-            p))
+There are some complications because JSON's grammar is recursive (e.g.
+Objects and Lists can contain themselves as values.)
 
-(defn jkey-value
-  []
-  (doparser [k jkey
-             _ (lexeme colon)
-             v jvalue]
-            [k v]))
+Because of this, and the fact that Clojure does not have `letrec` as in
+Scheme, one must create forward references via vars. `alter-root-var`,
+at this time, is the only way I know how to do this, though there may
+be other ways certainly."}
+  (:refer-clojure :exclude [interpose])
+  (:use [kessel :as k]))
 
-(defn jdict
-  []
-  (doparser [kvs (between \{ \} (sep-by jkey-value (lexeme comma)))]
-            (reduce conj {} kvs)))
+(def jdict nil)
+(def jlist nil)
 
-(def jlist (between \( \) (sep-by jvalue comma)))
+(def jkey (k/lexeme (k/either k/natural k/string-literal)))
+
+(def jvalue
+  (k/doparser [p (k/lexeme (k/either #'jlist #'jdict k/natural k/string-literal))]
+              p))
+
+(def jkey-value
+  (k/doparser [ky jkey
+               _ (k/lexeme k/colon)
+               v jvalue]
+              [ky v]))
+
+(alter-var-root #'jdict
+                (fn [_]
+                  (k/doparser [kvs (k/between (k/symb "{")
+                                              (k/symb "}")
+                                              (k/sep-by jkey-value
+                                                        (k/lexeme k/comma)))]
+                              (reduce conj {} kvs))))
+
+(alter-var-root #'jlist
+                (fn [_]
+                  (k/between (k/symb "[")
+                             (k/symb "]")
+                             (k/sep-by jvalue k/comma))))
+
