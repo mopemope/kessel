@@ -1,6 +1,6 @@
 # kessel
 
-Kessel is a more clojure-fied version of (clarsec)[https://github.com/mmikulicic/clarsec], which itself is a port of Haskell's Parsec to Clojure.
+Kessel is a more clojure-fied version of [clarsec](https://github.com/mmikulicic/clarsec), which itself is a port of Haskell's Parsec to Clojure.
 
 Rather than rely on an external monad library, kessel relies on `clojure.algo.monads`. This has the advantage that it can be dropped into other monadic code in Clojure should that be necessary.
 
