@@ -1,5 +1,4 @@
 (ns kessel
-  (:refer-clojure :exclude [interpose])
   (:use [clojure.algo.monads]))
 
 (def parser-m (state-t maybe-m))
@@ -15,20 +14,24 @@
 (defn >>== [p f]
   (>>= p #(return (f %))))
 
+(defn <$> [f p]
+  (>>= p #(return (f %))))
+
 (defn >> [p1 p2]
   (>>= p1 (fn [_] p2)))
 
 (defn either [& parsers]
   (apply (:m-plus parser-m) parsers))
 
+(def <|> either)
 
-(defmacro doparser
+(defmacro let-bind
   "Wraps body in `domonad' boilerplate"
   [& body]
   `(domonad parser-m
             ~@body))
 
-(defn any-token [strn]
+(defn any-token [^String strn]
   (if (= "" strn)
     nil
     [(first strn) (.substring strn 1)]))
@@ -70,12 +73,12 @@
   (optional (many1 parser)))
 
 (defn many1 [parser]
-  (doparser [a parser
+  (let-bind [a parser
              as (many parser)]
             (concat [a] as)))
 
 (defn end-by-m [f p sep]
-  (f (doparser [r p
+  (f (let-bind [r p
                 _ sep]
                r)))
 
@@ -87,7 +90,7 @@
 
 
 (defn sep-by-1 [p sep]
-  (doparser [x p
+  (let-bind [x p
              xs (many (>> sep p))]
             (cons x xs)))
 
@@ -95,23 +98,33 @@
   (either (sep-by-1 p sep) (return ())))
 
 (defn followed-by [p sep]
-  (doparser [r p
+  (let-bind [r p
              _ sep]
             r))
 
-(defn interpose [sep ps]
+(defn interpose2 [sep ps]
   (with-monad parser-m
     (m-reduce conj [] (clojure.core/interpose sep ps))))
 
 (def letter
-     (satisfy #(Character/isLetter %)))
+     (satisfy #(Character/isLetter ^Character %)))
+
+(def upper-char
+     (satisfy #(Character/isUpperCase ^Character %)))
+
+(def lower-char
+     (satisfy #(Character/isLowerCase ^Character %)))
 
 (def digit
-     (satisfy #(Character/isDigit %)))
+     (satisfy #(Character/isDigit ^Character %)))
 
 (defn one-of [target-strn]
   (let [chs (into #{} target-strn)]
     (satisfy #(contains? chs %))))
+
+(defn none-of [exclusion-strn]
+    (let [str-chars (into #{} exclusion-strn)]
+          (satisfy #(not (contains? str-chars %)))))
 
 (def aspace (satisfy #(= % \space)))
 
@@ -134,7 +147,7 @@
   (>>= p #(return (if (seq? %) (apply str %) (str %)))))
 
 (def base-identifier
-  (doparser [c  letter
+  (let-bind [c  letter
              cs (many (either letter digit))]
 
    (apply str (cons c cs))))
@@ -144,10 +157,10 @@
 
 (def natural
      (lexeme (>>== (stringify (many1 digit))
-                   #(new Integer %))))
+                   #(new Integer ^String %))))
 
 (defn between [open close p]
-  (doparser [_ open
+  (let-bind [_ open
              x p
              _ close]
             x))
@@ -163,6 +176,10 @@
 
 (def string-literal
   (stringify (lexeme (between (is-char \") (is-char \") (many (not-char \"))))))
+
+(def eol
+       (>> (optional (satisfy #(= % \return)))
+                    (satisfy #(= % \newline))))
 
 (defn parse [parser input]
   (parser input))
