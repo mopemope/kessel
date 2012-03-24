@@ -199,9 +199,19 @@
 
 (defn get-rest-info [input result]
   (if (nil? result)
-    nil
+    {:line-number 1 :column 0 :line ""}
     (let [info (get-line-info input (count (second result)))
           line-number (first info)
           line (second info)]
-      {:line-number line-number :line line})))
+      {:line-number line-number :column (count line) :line line})))
 
+(defn failed? [{:keys [type]}] (= type :failed))
+(defn- failed [m]
+  (merge m {:type :failed}))
+
+(defn parse$ [parser input]
+  (let [result (parser input)
+        rest (second result)]
+    (if (or (nil? rest) (not (empty? rest)))
+      (failed (get-rest-info input result))
+      (first result))))

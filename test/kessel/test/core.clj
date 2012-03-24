@@ -8,8 +8,8 @@
   (is (= (any-token "") nil)
       "any-token rule returns nil when EOF"))
 
+(def input ".   A  ")
+
 (deftest error
-  (let [input ".   AAAA"
-        r (parse (symb ".") input)]
-    (println (get-rest-info input r))))
+  (println (parse$ (symb ".") input)))
 

@@ -1,4 +1,4 @@
-(defproject org.clojars.mopemope/kessel "0.0.3-SNAPSHOT"
+(defproject org.clojars.mopemope/kessel "0.0.3"
   :description "Parsec ported to clojure based on clarsec"
   :dependencies [[org.clojure/clojure "1.3.0"]
                  [org.clojure/algo.monads "0.1.0"]]
