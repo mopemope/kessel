@@ -181,3 +181,24 @@
 
 (defn parse [parser input]
   (parser input))
+
+(defn- get-lastline [^String input]
+  (let [index (.lastIndexOf input (str \newline))]
+    (if (= -1 index)
+      input
+      (subs input index))))
+
+(defn- get-line-info [input rest-len]
+  (let [index-of-err (- (count input) rest-len)
+        sub (subs input 0 (inc index-of-err))
+        cnt (count (filter #{\newline} sub))]
+    [(inc cnt) (get-lastline sub)]))
+
+(defn get-rest-info [input result]
+  (if (nil? result)
+    nil
+    (let [info (get-line-info input (count (second result)))
+          line-number (first info)
+          line (second info)]
+      {:line-number line-number :line line})))
+
