@@ -215,3 +215,12 @@
     (if (or (nil? rest) (not (empty? rest)))
       (failed (get-rest-info input result))
       (first result))))
+
+(defn force-during-parse [d]
+  (fn [strn]
+    ((force d) strn)))
+
+(defmacro lazy [& body] `(force-during-parse (delay ~@body)))
+
+
+
