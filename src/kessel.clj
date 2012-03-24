@@ -132,6 +132,9 @@
 
 (def spaces (many space))
 
+(defn white-space [p]
+  (>> spaces p))
+
 (defn lexeme [p]
   (let-bind [a p _ spaces] a))
 
