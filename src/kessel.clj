@@ -133,7 +133,7 @@
 (def spaces (many space))
 
 (defn lexeme [p]
-  (>> spaces p))
+  (let-bind [a p _ spaces] a))
 
 (defn symb [name]
   (lexeme (string name)))
@@ -149,13 +149,12 @@
 (def base-identifier
   (let-bind [c  letter
              cs (many (either letter digit))]
-
    (apply str (cons c cs))))
 
 (def identifier
      (lexeme base-identifier))
 
-(def natural
+(def integer
      (lexeme (>>== (stringify (many1 digit))
                    #(new Integer ^String %))))
 
@@ -178,8 +177,7 @@
   (stringify (lexeme (between (is-char \") (is-char \") (many (not-char \"))))))
 
 (def eol
-       (>> (optional (satisfy #(= % \return)))
-                    (satisfy #(= % \newline))))
+  (>> (optional (satisfy #(= % \return))) (satisfy #(= % \newline))))
 
 (defn parse [parser input]
   (parser input))
