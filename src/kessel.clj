@@ -61,14 +61,22 @@
 (defn option [default p]
   (either p default))
 
+(defprotocol RegexParser
+  (regex [this]))
 
-(defmacro regex [^String re]
-  (let [ptrn (str "^(?:" re ")")]
-    `(fn [^String strn#]
-      (let [m# (re-find (re-pattern ~ptrn) strn#)
-            v# (if (vector? m#) (first m#) m#)]
-        (if v#
-          [v# (subs strn# (count v#))])))))
+(extend-protocol RegexParser
+  java.lang.String
+  (regex [this]
+    (let [re (re-pattern (str "^(?:" this ")"))]
+      (regex re)))
+
+  java.util.regex.Pattern
+  (regex [re]
+    (fn [^String strn]
+      (let [m (re-find re strn)
+            v (if (vector? m) (first m) m)]
+        (if v
+          [v (subs strn (count v))])))))
 
 (defmacro string [^String target]
   `(fn [^String strn#]
