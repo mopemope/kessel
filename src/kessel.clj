@@ -61,11 +61,26 @@
 (defn option [default p]
   (either p default))
 
-(defn string [target]
-  (>>==
-   (with-monad parser-m
-     (m-seq (map is-char target)))
-   #(apply str %)))
+
+(defmacro regex [^String re]
+  (let [ptrn (str "^(?:" re ")")]
+    `(fn [^String strn#]
+      (let [m# (re-find (re-pattern ~ptrn) strn#)
+            v# (if (vector? m#) (first m#) m#)]
+        (if v#
+          [v# (subs strn# (count v#))])))))
+
+(defmacro string [^String target]
+  `(fn [^String strn#]
+     (if (.startsWith strn# ~target)
+       [~target (subs strn# (count ~target))]
+       nil)))
+
+; (defn string [^String target]
+  ; (>>==
+   ; (with-monad parser-m
+     ; (m-seq (map is-char target)))
+   ; #(apply str %)))
 
 (declare many1)
 
@@ -128,9 +143,11 @@
 
 (def aspace (satisfy #(= % \space)))
 
-(def space (one-of " \r\n\t"))
+(def space (regex #"[\s\n\r]"))
+(def spaces (regex #"[\s\n\r]*"))
 
-(def spaces (many space))
+; (def space (one-of " \r\n\t"))
+; (def spaces (many space))
 
 (defn white-space [p]
   (>> spaces p))
