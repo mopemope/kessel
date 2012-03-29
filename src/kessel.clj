@@ -166,25 +166,26 @@
 (defn symb [name]
   (lexeme (string name)))
 
-(def semi (symb ";"))
-(def colon (symb ":"))
-(def comma (symb ","))
+; (def semi (symb ";"))
+; (def colon (symb ":"))
+; (def comma (symb ","))
+; (def comma (symb ","))
 
 ;; Convert the result of a parse to a string, if it's a list then concatenates the list...
 (defn stringify [p]
   (>>= p #(return (if (seq? %) (apply str %) (str %)))))
 
-(def base-identifier
-  (let-bind [c  letter
-             cs (many (either letter digit))]
-   (apply str (cons c cs))))
+; (def base-identifier
+  ; (let-bind [c  letter
+             ; cs (many (either letter digit))]
+   ; (apply str (cons c cs))))
 
-(def identifier
-     (lexeme base-identifier))
+; (def identifier
+     ; (lexeme base-identifier))
 
-(def integer
-     (lexeme (>>== (stringify (many1 digit))
-                   #(new Integer ^String %))))
+; (def integer
+     ; (lexeme (>>== (stringify (many1 digit))
+                   ; #(new Integer ^String %))))
 
 (defn between [open close p]
   (let-bind [_ open
@@ -192,17 +193,18 @@
              _ close]
             x))
 
-(defn parens [p]
-  (between (symb "(") (symb ")") p))
+; (defn parens [p]
+  ; (between (symb "(") (symb ")") p))
 
-(defn brackets [p]
-  (between (symb "[") (symb "]") p))
+; (defn brackets [p]
+  ; (between (symb "[") (symb "]") p))
 
-(defn braces [p]
-  (between (symb "{") (symb "}") p))
+; (defn braces [p]
+  ; (between (symb "{") (symb "}") p))
 
-(def string-literal
-  (stringify (lexeme (between (is-char \") (is-char \") (many (not-char \"))))))
+; (def string-literal
+  ; (stringify (lexeme (between (is-char \") (is-char \") (many (not-char \"))))))
+
 
 (def eol
   (>> (optional (satisfy #(= % \return))) (satisfy #(= % \newline))))
